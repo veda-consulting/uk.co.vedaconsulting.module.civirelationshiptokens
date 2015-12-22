@@ -20,17 +20,13 @@ class CRM_Civirelationshiptokens_Utils {
     
 
     $aParams = array(
-      'conatct_id' => $contactID,
+      'contact_id' => $contactID,
       'relationship_type_id' => $relTypeID,
       'is_active' => 1,
       'sequential' => 1,
     );
     $relDetails = civicrm_api3('Relationship', 'get', $aParams);
-    
-    //FIXME : if the multiple replationship    
-    // if (count($relDetails) > 1) {
-    //   self::handleMultipleRelationship ( $relParams );
-    // }
+
     return $relDetails['values'];
   }
   
@@ -39,8 +35,8 @@ class CRM_Civirelationshiptokens_Utils {
    * To get Token Replacement Values
    *
    */
-  static function getRelationshipTokenReplacementValues($conatctID, $tokens) {
-    if (empty($conatctID) OR CRM_Utils_Array::crmIsEmptyArray($tokens)) {
+  static function getRelationshipTokenReplacementValues($contactID, $tokens) {
+    if (empty($contactID) OR CRM_Utils_Array::crmIsEmptyArray($tokens)) {
       return array();
     }
 
@@ -49,9 +45,18 @@ class CRM_Civirelationshiptokens_Utils {
     $replaceArray = array();
 
     foreach ($tokenArray as $relTypeID => $value) {
-      $relValues = self::getRelationshipDetailsByContactID( $conatctID, $relTypeID );
-      foreach ($value as $targetContact => $tokenId ) {
-        $replaceArray[$tokenId] = $relValues[0]['contact_id_'.$targetContact];
+      $relValues = self::getRelationshipDetailsByContactID( $contactID, $relTypeID );
+      if (!empty($relValues)) {
+        foreach ($value as $targetContact => $tokenId ) {
+          $replaceArray[$tokenId] = self::getContactDisplayName ( $relValues[0]['contact_id_'.$targetContact] );
+          // in case of multiple relationship in single relationship type
+          if (count($relValues) > 1) {
+            foreach ($relValues as $key => $relationships) {
+              $allRelatedContact[$relationships['id']] = self::getContactDisplayName ( $relationships['contact_id_'.$targetContact] );
+            }
+            $replaceArray[$tokenId] = implode(', ', array_unique($allRelatedContact));
+          }
+        }
       }
     }
 
@@ -83,14 +88,5 @@ class CRM_Civirelationshiptokens_Utils {
   static function getContactDisplayName ( $contactID ) {
     return CRM_Contact_BAO_Contact::displayName($contactID);
   }
-  
-  /**
-   * To manage , if contact has mutiple relationship with single relationship type 
-   * Return Current relationship, ( by created date / active )
-   *
-   */
-  static function handleMultipleRelationship ( $relParams ) {
-    // NEED TO FIX , if mutiple relationship
-    return $currentRelValues;
-  }
+
 } // end class

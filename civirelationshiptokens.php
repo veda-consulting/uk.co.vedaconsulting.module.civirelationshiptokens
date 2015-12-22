@@ -153,7 +153,7 @@ function civirelationshiptokens_civicrm_tokenValues(&$values, $cids, $job = null
     foreach($cids as $id){
       $tokenReplaceValues = CRM_Civirelationshiptokens_Utils::getRelationshipTokenReplacementValues($id, $tokens['relationship']);
       foreach ($tokens['relationship'] as $relToken) {
-        $values[$id]['relationship.'.$relToken] = CRM_Civirelationshiptokens_Utils::getContactDisplayName( $tokenReplaceValues[$relToken] );
+        $values[$id]['relationship.'.$relToken] = $tokenReplaceValues[$relToken];
       }//end foreach
     }//end foreach
   }//end if
