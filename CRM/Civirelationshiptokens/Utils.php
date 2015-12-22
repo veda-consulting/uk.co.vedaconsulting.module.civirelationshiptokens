@@ -11,25 +11,27 @@ class CRM_Civirelationshiptokens_Utils {
    * To get relationship detials by relationshipType ID 
    *
    */
-  static function getRelationshipDetailsByContactID( $conatctID, $relTypeID ) {
+  static function getRelationshipDetailsByContactID( $contactID, $relTypeID ) {
     $relDetails  = array();
 
-    if (empty($conatctID) OR empty($relTypeID)) {
+    if (empty($contactID) OR empty($relTypeID)) {
       return $relDetails;
     }
     
-    $relDetails = CRM_Contact_BAO_Relationship::getRelationship($conatctID
-      , 3, 0, 0, 0
-      , NULL, NULL
-      , FALSE
-      , array('relationship_type_id' => $relTypeID)
+
+    $aParams = array(
+      'conatct_id' => $contactID,
+      'relationship_type_id' => $relTypeID,
+      'is_active' => 1,
+      'sequential' => 1,
     );
+    $relDetails = civicrm_api3('Relationship', 'get', $aParams);
     
     //FIXME : if the multiple replationship    
     // if (count($relDetails) > 1) {
     //   self::handleMultipleRelationship ( $relParams );
     // }
-    return array_values($relDetails);
+    return $relDetails['values'];
   }
   
   
